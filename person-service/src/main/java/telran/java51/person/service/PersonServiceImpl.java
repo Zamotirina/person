@@ -10,9 +10,11 @@ import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails.Addre
 import org.springframework.stereotype.Service;
 import org.springframework.ui.ModelMap;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import telran.java51.person.dao.PersonRepository;
 import telran.java51.person.dto.AddressDto;
+import telran.java51.person.dto.CityPopulationDto;
 import telran.java51.person.dto.PersonDto;
 import telran.java51.person.dto.exception.PersonNotFoundException;
 
@@ -25,6 +27,7 @@ public class PersonServiceImpl implements PersonService {
 	final PersonRepository personRepository;
 	final ModelMapper modelMapper;
 
+	@org.springframework.transaction.annotation.Transactional //Добавляем, чтобы сделать транзакционность, то есть чтобы два пользователя одновременно не добавили у нас одно и то же ы
 	@Override
 	public Boolean addPerson(PersonDto personDto) {
 		
@@ -46,20 +49,23 @@ public class PersonServiceImpl implements PersonService {
 		return modelMapper.map(person, PersonDto.class);
 	}
 
+	@org.springframework.transaction.annotation.Transactional(readOnly=true)
 	@Override
 	public Iterable<PersonDto> findAllByCity(String city) {
 		
 		
-		return personRepository.findAllPersonsByCity(city).stream().map(x->modelMapper.map(x, PersonDto.class)).toList();
+		return personRepository.findAllPersonsByCity(city).map(x->modelMapper.map(x, PersonDto.class)).toList();
 	}
 
+	@org.springframework.transaction.annotation.Transactional(readOnly=true)
 	@Override
 	public Iterable<PersonDto> findAllByAgeBetweenAgeFromAndAgeTo(Integer ageFrom, Integer ageTo) {
 	
-		return personRepository.findAllByAgeBetweenDateFromAndDateTo(LocalDate.now().minusYears(ageFrom),LocalDate.now().minusYears(ageTo)).stream().map(x->modelMapper.map(x, PersonDto.class)).toList();
+		return personRepository.findAllByAgeBetweenDateFromAndDateTo(LocalDate.now().minusYears(ageFrom),LocalDate.now().minusYears(ageTo)).map(x->modelMapper.map(x, PersonDto.class)).toList();
 
 	}
 
+	@org.springframework.transaction.annotation.Transactional
 	@Override
 	public PersonDto updatePersonName(Integer id, String newName) {
 	
@@ -73,13 +79,15 @@ public class PersonServiceImpl implements PersonService {
 		return modelMapper.map(person, PersonDto.class);
 	}
 
+	@org.springframework.transaction.annotation.Transactional(readOnly=true)
 	@Override
 	public Iterable<PersonDto> findAllByName(String name) {
 	
 		
-		return  personRepository.findAllByName(name).stream().map(x->modelMapper.map(x, PersonDto.class)).toList();
+		return  personRepository.findAllByName(name).map(x->modelMapper.map(x, PersonDto.class)).toList();
 	}
 
+	@org.springframework.transaction.annotation.Transactional
 	@Override
 	public PersonDto updatePersonAdress(Integer id, AddressDto addressDto) {
 	
@@ -94,6 +102,7 @@ public class PersonServiceImpl implements PersonService {
 		return modelMapper.map(person, PersonDto.class);
 	}
 
+@org.springframework.transaction.annotation.Transactional
 	@Override
 	public PersonDto deleteById(Integer id) {
 
@@ -102,5 +111,12 @@ public class PersonServiceImpl implements PersonService {
 		personRepository.delete(person);
 		return modelMapper.map(person, PersonDto.class);
 	}
+
+@Override
+public Iterable<CityPopulationDto> getCitiesPopulation() {
+
+	return personRepository.getCitiesPopulation();
+
+}
 
 }
