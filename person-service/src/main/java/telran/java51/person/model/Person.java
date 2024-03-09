@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -21,34 +23,19 @@ import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of="id") //Пишем, чтобы в Java их сравнивать и добавлять в сеты, где их уникальность будет сравниваться как раз так
-@Getter
-@Entity//Первое минимальное условие
-@Table(name="People") //Название таблицы в SQL
+@EqualsAndHashCode(of="id") 
+@Entity
+@Table(name="People") 
 
-/*
- * Чтобы эту сущность система отмапила у нас для базы данных, надо выполнить два минимальных условия:
- * 1) Добавить аннотацию Entity
- * 2) Добавить аннотацию Id к полю, которое мы считаем Id
- */
+//Добавляем эту аннотацию, чтобы выбрать стартегию мапинга наследования
 
-/*
- * Но при этом если мы просто запустим приложение, оно не сработает, потому что система не сможет отмэппить наш Adress, это не стандартный Java-объект как LocalDate или Integer, поэтому система не понимает, что с ним делать
- * 
- * Нам надо как-то дать ей указание, что с этим адресом делать
- * 
- * Выходов есть несколько, начинаем, как всегда, с вариантов похуже:
- * 
- * 1) Сделать и класс Person, и класс Adress Serializable, то есть превратить их в поток байт. То есть мы будем хранить поле Adress класса Person как поток байт, и система сможет его сожрать. То есть Spring и Hibernate будет перегонять объект в поток байт и обратно 
- * То есть выглядеть это будет как строка, но по факту там будет храниться набор байт. Соответственно если мы подключимся к этой базе данных другим приложением, например, написанным на питоне, то питон этот поток байт уже не сожрет, он их увидит, но работать с ними не сможет
- * Но при этом лучше все равно всегда делать объекты Serializable, потому что если наше приложение разделено на несколько частей и работает на нескольких серверах, то данные могут отправлять с одного сервера другому, это будет обмен Java c Java, а он делается через Serializable
- * 
- * 2) Добавить к встроенному классу аннотацию @Embedded
- */
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE) //Будет одна таблица для всех наследников
+//@Inheritance(strategy = InheritanceType.JOINED)//Будут созданы таблицы под все классы, одна главная с общими полями и id, остальные таблицы - с id и уникальными полями для каждого класса 
+//@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)//Будет создано по таблице под каждый класс. В каждой таблице - все данные этого класса (и свои и унаследованные)
 public class Person implements Serializable{
 
 	private static final long serialVersionUID = -7204058271536940439L;
-	@Id //Второе минимальное условие. При этом Эдуард рекомендует использовать вариант аннотации Jakarta, а не Spring, потому что так будет проще если что слезить со Spring на другую технологию, если понадобится 
+	@Id 
 	Integer id;
 	@Setter
 	String name;

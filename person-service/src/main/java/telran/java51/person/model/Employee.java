@@ -2,6 +2,10 @@ package telran.java51.person.model;
 
 import java.time.LocalDate;
 
+/*
+ * 2.Создаем второго наследника от Person
+ */
+
 import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,10 +17,8 @@ import lombok.Setter;
 @Entity
 public class Employee extends Person {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1592754431407198602L;
+	
 	String company;
 	int salary;
 	

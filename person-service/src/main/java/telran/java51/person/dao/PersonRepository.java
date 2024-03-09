@@ -15,17 +15,11 @@ import telran.java51.person.model.Person;
 
 public interface PersonRepository extends CrudRepository<Person, Integer> {
 
-	/*
-	 * Здесь можно экстендить и интерфейс JPARepository, но в целом CrudRepository нам вполне хватает
-	 */
-	@Query("SELECT p FROM Person p WHERE p.address.city =:city")
-	Stream <Person> findAllPersonsByCity(String city);
-
-	@Query("SELECT p FROM Person p WHERE p.birthDate BETWEEN :dateFrom and :dateTo")
-	Stream <Person> findAllByAgeBetweenDateFromAndDateTo(LocalDate dateFrom, LocalDate dateTo);
-
-	@Query("SELECT p FROM Person p WHERE p.name =:name")
-	Stream <Person> findAllByName(String name);
+	Stream <Person> findAllByNameIgnoreCase(String name);
+	
+	Stream <Person> findAllByAddressCityIgnoreCase(String city);
+	
+	Stream <Person> findAllByBirthDateBetween(LocalDate dateFrom, LocalDate dateTo);
 	
 	@Query("select new telran.java51.person.dto.CityPopulationDto(p.address.city, count(p)) from Person p group by p.address.city order by count(p) desc")
 	List <CityPopulationDto> getCitiesPopulation();

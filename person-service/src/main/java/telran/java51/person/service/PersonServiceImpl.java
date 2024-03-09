@@ -1,22 +1,24 @@
 package telran.java51.person.service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
-import javax.crypto.KeyAgreement;
+
 
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails.Address;
-import org.springframework.stereotype.Service;
-import org.springframework.ui.ModelMap;
 
-import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+
+
 import lombok.RequiredArgsConstructor;
 import telran.java51.person.dao.PersonRepository;
 import telran.java51.person.dto.AddressDto;
 import telran.java51.person.dto.CityPopulationDto;
 import telran.java51.person.dto.PersonDto;
+import telran.java51.person.dto.ChildDto;
+import telran.java51.person.dto.EmployeeDto;
 import telran.java51.person.dto.exception.PersonNotFoundException;
 import telran.java51.person.model.Child;
 import telran.java51.person.model.Employee;
@@ -24,12 +26,17 @@ import telran.java51.person.model.Person;
 
 @Service
 @RequiredArgsConstructor
+
+/*
+ * 3. Имплементируем CommandLineRunner, чтобы внизу этого класса написать несколько человек, которые предзаполнятся в нашу базу
+ */
 public class PersonServiceImpl implements PersonService, CommandLineRunner {
 	
 	final PersonRepository personRepository;
 	final ModelMapper modelMapper;
+	
 
-	@org.springframework.transaction.annotation.Transactional //Добавляем, чтобы сделать транзакционность, то есть чтобы два пользователя одновременно не добавили у нас одно и то же ы
+	@Transactional //Добавляем, чтобы сделать транзакционность, то есть чтобы два пользователя одновременно не добавили у нас одно и то же ы
 	@Override
 	public Boolean addPerson(PersonDto personDto) {
 		
@@ -37,74 +44,23 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 			
 			return false;
 		} 
-	
 		
+	if(personDto instanceof ChildDto) {
+		personRepository.save(modelMapper.map(personDto, Child.class));
+		return true;
+	}
+	
+	if(personDto instanceof EmployeeDto) {
+		personRepository.save(modelMapper.map(personDto, Employee.class));
+		return true;
+	}
+	
 		personRepository.save(modelMapper.map(personDto, Person.class));
 			return true;
 	
 	}
-
-	@Override
-	public PersonDto findById(Integer id) {
-		
-		Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
-		return modelMapper.map(person, PersonDto.class);
-	}
-
-	@org.springframework.transaction.annotation.Transactional(readOnly=true)
-	@Override
-	public Iterable<PersonDto> findAllByCity(String city) {
-		
-		
-		return personRepository.findAllPersonsByCity(city).map(x->modelMapper.map(x, PersonDto.class)).toList();
-	}
-
-	@org.springframework.transaction.annotation.Transactional(readOnly=true)
-	@Override
-	public Iterable<PersonDto> findAllByAgeBetweenAgeFromAndAgeTo(Integer ageFrom, Integer ageTo) {
 	
-		return personRepository.findAllByAgeBetweenDateFromAndDateTo(LocalDate.now().minusYears(ageFrom),LocalDate.now().minusYears(ageTo)).map(x->modelMapper.map(x, PersonDto.class)).toList();
-
-	}
-
-	@org.springframework.transaction.annotation.Transactional
-	@Override
-	public PersonDto updatePersonName(Integer id, String newName) {
-	
-		Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
-
-		if(newName!=null) {
-			 person.setName(newName);
-			 personRepository.save(person);
-		}
-		
-		return modelMapper.map(person, PersonDto.class);
-	}
-
-	@org.springframework.transaction.annotation.Transactional(readOnly=true)
-	@Override
-	public Iterable<PersonDto> findAllByName(String name) {
-	
-		
-		return  personRepository.findAllByName(name).map(x->modelMapper.map(x, PersonDto.class)).toList();
-	}
-
-	@org.springframework.transaction.annotation.Transactional
-	@Override
-	public PersonDto updatePersonAdress(Integer id, AddressDto addressDto) {
-	
-		Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
-
-		if(addressDto!=null) {
-			
-			person.setAddress(modelMapper.map(addressDto, telran.java51.person.model.Address.class));
-			personRepository.save(person);
-			
-		}
-		return modelMapper.map(person, PersonDto.class);
-	}
-
-@org.springframework.transaction.annotation.Transactional
+	@Transactional
 	@Override
 	public PersonDto deleteById(Integer id) {
 
@@ -114,6 +70,82 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 		return modelMapper.map(person, PersonDto.class);
 	}
 
+	
+	@Transactional
+	@Override
+	public PersonDto updatePersonName(Integer id, String newName) {
+	
+		Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
+
+		if(newName!=null) {
+			 person.setName(newName);
+			// personRepository.save(person); //строчка не нужна из-за 	@Transactional
+		}
+		
+		return modelMapper.map(person, PersonDto.class);
+	}
+	
+	@Transactional
+	@Override
+	public PersonDto updatePersonAdress(Integer id, AddressDto addressDto) {
+	
+		Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
+
+		if(addressDto!=null) {
+			
+			person.setAddress(modelMapper.map(addressDto, telran.java51.person.model.Address.class));
+			//personRepository.save(person);//строчка не нужна из-за 	@Transactional
+			
+		}
+		return modelMapper.map(person, PersonDto.class);
+	}
+
+	@Override
+	public PersonDto findById(Integer id) {
+		
+		Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
+		
+		/*
+		 * Мы добаляем тут проверку ниже, и теперь у нас в postman уже будет возвращаться нужные данные
+		 */
+		
+		if(person instanceof Child) {
+			return modelMapper.map(person, ChildDto.class);
+		}
+		
+		if(person instanceof Employee) {
+			return modelMapper.map(person, EmployeeDto.class);
+		}
+		
+			return modelMapper.map(person, PersonDto.class);
+		
+	}
+
+	
+	@Transactional(readOnly=true)
+	@Override
+	public Iterable<PersonDto> findAllByCity(String city) {
+		
+		return personRepository.findAllByAddressCityIgnoreCase(city).map(x->modelMapper.map(x, PersonDto.class)).toList();
+	}
+
+	@Transactional(readOnly=true)
+	@Override
+	public Iterable<PersonDto> findAllByAgeBetweenAgeFromAndAgeTo(Integer ageFrom, Integer ageTo) {
+	
+		return personRepository.findAllByBirthDateBetween(LocalDate.now().minusYears(ageFrom),LocalDate.now().minusYears(ageTo)).map(x->modelMapper.map(x, PersonDto.class)).toList();
+
+	}
+
+
+	@Transactional(readOnly=true)
+	@Override
+	public Iterable<PersonDto> findAllByName(String name) {
+	
+		return  personRepository.findAllByNameIgnoreCase(name).map(x->modelMapper.map(x, PersonDto.class)).toList();
+	}
+
+
 @Override
 public Iterable<CityPopulationDto> getCitiesPopulation() {
 
@@ -121,7 +153,11 @@ public Iterable<CityPopulationDto> getCitiesPopulation() {
 
 }
 
-@org.springframework.transaction.annotation.Transactional
+/*
+ * 4. Пишем предзаполнение для нашей базы, чтобы в нее сразу кто-то заполнялся
+ */
+
+@Transactional //Добавляем аннотацию, так как сохраняем данные в базу
 @Override
 public void run(String... args) throws Exception {
 	
