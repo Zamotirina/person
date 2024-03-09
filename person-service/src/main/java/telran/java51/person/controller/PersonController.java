@@ -81,6 +81,12 @@ public class PersonController{
 		return personService.deleteById(id);
 	}
 	
+	/*
+	 * Этот метод у нас должен вернуть все города, которые у нас есть в базе и посчитать число Person, которые в этих городах "живут"
+	 * То есть вернуть что-то формата: Ашкелон:2, Лод:3, Беер-Шева:1 
+	 * 
+	 * Для этого пишем новое Dto CityPopulationDto
+	 */
 	@GetMapping("/population/city")
 	public Iterable <CityPopulationDto> getCitiesPopulation() {
 	

@@ -48,6 +48,22 @@ public interface PersonRepository extends CrudRepository<Person, Integer> {
 	//@Query("SELECT p FROM Person p WHERE p.birthDate BETWEEN :dateFrom and :dateTo")
 	Stream <Person> findAllByBirthDateBetween(LocalDate dateFrom, LocalDate dateTo);
 
+	/*
+	 * Пишем запрос для того чтобы вернуть список городов, жители которых есть в нашей базе в формате
+	 * 
+	 * Ашкелон:3
+	 * Лод:2
+	 * Беер-Шева:1
+	 * 
+	 * Запрос формата: 
+	 * 
+	 * 	@Query("select new telran.java51.person.dto.CityPopulationDto(p.address.city, count(p)) from Person p group by p.address.city order by count(p) desc")
+	 * 
+	 * Запрос примерно такой:
+	 * Создай новые объекты CityPopulationDto (в конструктор идет вот это) из базы персонов, сгруппированные по городу и расположи по мере уменьшения посчитанной популяции (count)
+	 * 
+	 * Инфа telran.java51.person.dto. нужна так как у нас тут нет никакого импорта и нам надо как-то указать, откуда брать инфу
+	 */
 	@Query("select new telran.java51.person.dto.CityPopulationDto(p.address.city, count(p)) from Person p group by p.address.city order by count(p) desc")
 	List <CityPopulationDto> getCitiesPopulation();
 	
