@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -53,6 +54,18 @@ public class Person implements Serializable{
 	String name;
 	LocalDate birthDate;
 	@Setter
+	
+	/*
+	 *  В некоторых тьюториалах пишут, что надо ставить и там и там 
+	 *  
+	 * Этой аннотацией мы намекаем Spring, что это встроенный класс. 
+	 * В целом можно использовать @Embedded тут, или @Embeddable над самим классом Address
+	 *
+	 * Есть небольшая разница. Если мы хотим, чтобы класс Address был встроенным в несколько классов, то имеет смысл использовать @Embeddable
+	 * Или если мы хотим использовать составной первичный ключ из нескольких полей. Тогда одно из решений - объединить эти поля и вынести в отдельный класс, и сделать его @Embeddable
+	 * 
+	 * Если же где-то у меня этот класс встроенный, а где-то нет, то лучше использовать @Embedded
+	 */
 	@Embedded
 	Address address;
 }

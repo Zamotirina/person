@@ -23,7 +23,13 @@ public class PersonController{
 	
 	final PersonService personService;
 	
-
+/*
+ * Эдуард также рассказал, что аннотацию @Transactionsl иногда ставят тут в контроллере, а не в ServiceImpl
+ * 
+ * В целом это рабатает. 
+ * 
+ * Но в эксклюзивных случаях, когда при микросерверной архитектуре приложение разделенно между серверами, и контроллер - на одном, а сервис - на другом. Тогда аннотации в контроллере не сработают, надо ставить их в каждом классе отдельно
+ */
 
 	@PostMapping
 	public Boolean addPerson(@RequestBody PersonDto personDto) {
@@ -44,9 +50,9 @@ public class PersonController{
 	}
 	
 	@GetMapping("/ages/{ageTo}/{ageFrom}")
-	public Iterable <PersonDto> findAllByAgeBetweenAgeFromAndAgeTo(@PathVariable Integer ageTo, @PathVariable Integer ageFrom) {
+	public Iterable <PersonDto> findAllBetweenAge(@PathVariable Integer ageTo, @PathVariable Integer ageFrom) {
 	
-		return personService.findAllByAgeBetweenAgeFromAndAgeTo(ageFrom, ageTo);
+		return personService.findAllBetweenAge(ageFrom, ageTo);
 	}
 	
 	@PutMapping("/{id}/name/{newName}")
