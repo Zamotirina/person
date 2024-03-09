@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of="id") //Пишем, чтобы в Java их сравнивать и добавлять в сеты, где их уникальность будет сравниваться как раз так
