@@ -1,16 +1,20 @@
 package telran.java51.person.service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
-
-
+import org.apache.catalina.mapper.Mapper;
+import org.aspectj.weaver.ast.Instanceof;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeMap;
+import org.modelmapper.internal.bytebuddy.asm.Advice.Return;
+import org.modelmapper.internal.bytebuddy.description.ModifierReviewable.OfAbstraction;
 import org.springframework.boot.CommandLineRunner;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 
 import lombok.RequiredArgsConstructor;
 import telran.java51.person.dao.PersonRepository;
@@ -34,7 +38,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 	
 	final PersonRepository personRepository;
 	final ModelMapper modelMapper;
-	
+
 
 	@Transactional //Добавляем, чтобы сделать транзакционность, то есть чтобы два пользователя одновременно не добавили у нас одно и то же ы
 	@Override
@@ -67,6 +71,15 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 		Person person = personRepository.findById(id).orElseThrow(PersonNotFoundException::new);
 
 		personRepository.delete(person);
+		
+		if(person instanceof Child) {
+			return modelMapper.map(person, ChildDto.class);
+		}
+		
+		if(person instanceof Employee) {
+			modelMapper.map(person, EmployeeDto.class);
+	
+		}
 		return modelMapper.map(person, PersonDto.class);
 	}
 
@@ -82,7 +95,16 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 			// personRepository.save(person); //строчка не нужна из-за 	@Transactional
 		}
 		
+		if(person instanceof Child) {
+			return modelMapper.map(person, ChildDto.class);
+		}
+		
+		if(person instanceof Employee) {
+			modelMapper.map(person, EmployeeDto.class);
+	
+		}
 		return modelMapper.map(person, PersonDto.class);
+		
 	}
 	
 	@Transactional
@@ -97,7 +119,17 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 			//personRepository.save(person);//строчка не нужна из-за 	@Transactional
 			
 		}
+		
+		if(person instanceof Child) {
+			return modelMapper.map(person, ChildDto.class);
+		}
+		
+		if(person instanceof Employee) {
+			modelMapper.map(person, EmployeeDto.class);
+	
+		}
 		return modelMapper.map(person, PersonDto.class);
+		
 	}
 
 	@Override
@@ -126,7 +158,10 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 	@Override
 	public Iterable<PersonDto> findAllByCity(String city) {
 		
-		return personRepository.findAllByAddressCityIgnoreCase(city).map(x->modelMapper.map(x, PersonDto.class)).toList();
+		Iterable <Person> list=personRepository.findAllByAddressCityIgnoreCase(city).toList();
+		
+		
+		return null;
 	}
 
 	@Transactional(readOnly=true)

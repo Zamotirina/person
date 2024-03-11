@@ -6,6 +6,10 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+
+import telran.java51.person.dto.ChildDto;
+
 /*
  * 1. Этот файл мы просто скопировали из предыдущих проектов, чтобы адекватно сработал mapper
  */
