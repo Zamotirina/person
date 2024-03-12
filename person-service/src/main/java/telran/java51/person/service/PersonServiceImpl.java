@@ -242,14 +242,14 @@ public void run(String... args) throws Exception {
 @Override
 public Iterable<ChildDto> getChildren() {
 	
-	return personRepository.findAllChildren().map(x->modelMapper.map(x, ChildDto.class)).toList();
+	return personRepository.findChildrenBy().map(x->modelMapper.map(x, ChildDto.class)).toList();
 }
 
 @Transactional(readOnly=true)
 @Override
 public Iterable<EmployeeDto> getEmployeesBySalaryBetween(int min, int max) {
 
-	return personRepository.findEmployeesBySalaryBetween(min,max).map(x->modelMapper.map(x, EmployeeDto.class)).toList();
+	return personRepository.findBySalaryBetween(min,max).map(x->modelMapper.map(x, EmployeeDto.class)).toList();
 }
 
 }
