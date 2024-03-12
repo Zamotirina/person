@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.apache.catalina.mapper.Mapper;
 import org.aspectj.weaver.ast.Instanceof;
+import org.hibernate.engine.spi.ExtendedSelfDirtinessTracker;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
 import org.modelmapper.internal.bytebuddy.asm.Advice.Return;
@@ -38,6 +39,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 	
 	final PersonRepository personRepository;
 	final ModelMapper modelMapper;
+	final PersonModelDtoMapper mapper;
 
 
 	@Transactional //Добавляем, чтобы сделать транзакционность, то есть чтобы два пользователя одновременно не добавили у нас одно и то же ы
@@ -158,17 +160,44 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 	@Override
 	public Iterable<PersonDto> findAllByCity(String city) {
 		
-		Iterable <Person> list=personRepository.findAllByAddressCityIgnoreCase(city).toList();
+		//return (Iterable<PersonDto>) personRepository.findAllByAddressCityIgnoreCase(city).map(x->mapper.mapToDto(x)).toList();
+
+		//Ниже мое решение
 		
+		List<Person> list= personRepository.findAllByAddressCityIgnoreCase(city).toList();
 		
-		return null;
+		List <PersonDto> result=new ArrayList();
+		
+		for(Person res: list) {
+			
+			if(res instanceof Child) {
+
+				result.add(modelMapper.map(res, ChildDto.class));
+				
+			}
+			
+			if(res instanceof Employee) {
+				result.add(modelMapper.map(res, EmployeeDto.class));
+				
+			}
+			
+			if(res instanceof Person) {
+				result.add(modelMapper.map(res, PersonDto.class));
+				
+			}
+		}
+	
+		
+		return result;
+		
+		//Выше мое решение
 	}
 
 	@Transactional(readOnly=true)
 	@Override
 	public Iterable<PersonDto> findAllByAgeBetweenAgeFromAndAgeTo(Integer ageFrom, Integer ageTo) {
 	
-		return personRepository.findAllByBirthDateBetween(LocalDate.now().minusYears(ageFrom),LocalDate.now().minusYears(ageTo)).map(x->modelMapper.map(x, PersonDto.class)).toList();
+		return personRepository.findAllByBirthDateBetween(LocalDate.now().minusYears(ageFrom),LocalDate.now().minusYears(ageTo)).map(x->mapper.mapToDto(x)).toList();
 
 	}
 
@@ -177,7 +206,7 @@ public class PersonServiceImpl implements PersonService, CommandLineRunner {
 	@Override
 	public Iterable<PersonDto> findAllByName(String name) {
 	
-		return  personRepository.findAllByNameIgnoreCase(name).map(x->modelMapper.map(x, PersonDto.class)).toList();
+		return  personRepository.findAllByNameIgnoreCase(name).map(x->mapper.mapToDto(x)).toList();
 	}
 
 

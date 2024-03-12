@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 
 import lombok.Getter;
+import lombok.Setter;
 
 /*
  * Теперь мы хотим объяснить jackson, что нужно также улавливать тип наших Person-ов и их считывать
